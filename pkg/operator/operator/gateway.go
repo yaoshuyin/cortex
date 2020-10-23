@@ -72,6 +72,7 @@ func AddAPIToAPIGateway(apiEndpoint string, apiGatewayType userconfig.APIGateway
 	errs := []error{}
 
 	for _, routeMap := range routeToIntegrationMapping {
+
 		// check if API Gateway route already exists
 		existingRoute, err := config.AWS.GetRoute(apiGatewayID, routeMap.APIGatewayRoute)
 		if err != nil {
@@ -82,7 +83,7 @@ func AddAPIToAPIGateway(apiEndpoint string, apiGatewayType userconfig.APIGateway
 		}
 
 		if config.Cluster.APILoadBalancerScheme == clusterconfig.InternalLoadBalancerScheme {
-			err = config.AWS.CreateRoute(apiGatewayID, *config.Cluster.VPCLinkIntegration.IntegrationId, routeMap.APIGatewayRoute)
+			err = config.AWS.CreateRoute(config.Cluster.APIGateway, *config.Cluster.VPCLinkIntegration.IntegrationId, routeMap.APIGatewayRoute)
 			if err != nil {
 				errs = append(errs, err)
 				continue
@@ -104,7 +105,7 @@ func AddAPIToAPIGateway(apiEndpoint string, apiGatewayType userconfig.APIGateway
 				continue
 			}
 
-			err = config.AWS.CreateRoute(apiGatewayID, integrationID, routeMap.APIGatewayRoute)
+			err = config.AWS.CreateRoute(config.Cluster.APIGateway, integrationID, routeMap.APIGatewayRoute)
 			if err != nil {
 				errs = append(errs, err)
 				continue

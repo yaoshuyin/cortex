@@ -18,7 +18,10 @@ package aws
 
 import (
 	"fmt"
+	"net/http"
+	"path"
 	"strings"
+	"time"
 
 	"github.com/aws/aws-sdk-go/aws"
 	"github.com/aws/aws-sdk-go/service/apigatewayv2"
@@ -313,16 +316,35 @@ func (c *Client) GetRoute(apiGatewayID string, endpoint string) (*apigatewayv2.R
 }
 
 // CreateRoute creates a new route and attaches the route to the integration
-func (c *Client) CreateRoute(apiGatewayID string, integrationID string, endpoint string) error {
+func (c *Client) CreateRoute(apiGateway *apigatewayv2.Api, integrationID string, endpoint string) error {
+	// *config.Cluster.APIGateway.ApiId
+	apiGatewayID := apiGateway.ApiId
+	fullEndpoint := path.Join(*apiGateway.ApiEndpoint, endpoint)
+
 	_, err := c.APIGatewayV2().CreateRoute(&apigatewayv2.CreateRouteInput{
-		ApiId:    &apiGatewayID,
+		ApiId:    apiGatewayID,
 		RouteKey: aws.String("ANY " + endpoint),
 		Target:   aws.String("integrations/" + integrationID),
 	})
 	if err != nil {
-		return errors.Wrap(err, fmt.Sprintf("failed to create %s route for api gateway %s with integration %s", endpoint, apiGatewayID, integrationID))
+		return errors.Wrap(err, fmt.Sprintf("failed to create %s route for api gateway %s with integration %s", endpoint, *apiGatewayID, integrationID))
 	}
-	return nil
+
+	retries := 40
+	fmt.Println("gonna try with", fullEndpoint, "endpoint")
+	for i := 0; i < retries; i++ {
+		time.Sleep(250 * time.Millisecond)
+		client := http.Client{
+			Timeout: time.Second,
+		}
+		resp, err := client.Get(fullEndpoint)
+		if err == nil && resp.StatusCode != 404 {
+			fmt.Println("we got the right response at", i, "retries")
+			return nil
+		}
+	}
+
+	return errors.ErrorUnexpected("create route failed")
 }
 
 // CreateHTTPIntegration creates new HTTP integration for API Gateway, returns integration ID
