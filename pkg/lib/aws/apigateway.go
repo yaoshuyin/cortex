@@ -334,6 +334,7 @@ func (c *Client) CreateRoute(apiGateway *apigatewayv2.Api, integrationID string,
 	fmt.Println("gonna try with", fullEndpoint, "endpoint")
 	for i := 0; i < retries; i++ {
 		time.Sleep(250 * time.Millisecond)
+		fmt.Println(i+1, "trying on endpoint", fullEndpoint)
 		client := http.Client{
 			Timeout: time.Second,
 		}
@@ -344,7 +345,7 @@ func (c *Client) CreateRoute(apiGateway *apigatewayv2.Api, integrationID string,
 		}
 	}
 
-	return errors.ErrorUnexpected("create route failed")
+	return errors.ErrorUnexpected("create route failed for endpoint", fullEndpoint)
 }
 
 // CreateHTTPIntegration creates new HTTP integration for API Gateway, returns integration ID
