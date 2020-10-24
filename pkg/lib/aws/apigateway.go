@@ -19,13 +19,14 @@ package aws
 import (
 	"fmt"
 	"net/http"
-	"path"
 	"strings"
 	"time"
 
 	"github.com/aws/aws-sdk-go/aws"
 	"github.com/aws/aws-sdk-go/service/apigatewayv2"
+	"github.com/cortexlabs/cortex/pkg/lib/debug"
 	"github.com/cortexlabs/cortex/pkg/lib/errors"
+	"github.com/cortexlabs/cortex/pkg/lib/urls"
 )
 
 // CreateAPIGateway Creates a new API Gateway with the default stage
@@ -319,8 +320,8 @@ func (c *Client) GetRoute(apiGatewayID string, endpoint string) (*apigatewayv2.R
 func (c *Client) CreateRoute(apiGateway *apigatewayv2.Api, integrationID string, endpoint string) error {
 	// *config.Cluster.APIGateway.ApiId
 	apiGatewayID := apiGateway.ApiId
-	fullEndpoint := path.Join(*apiGateway.ApiEndpoint, endpoint)
-
+	fullEndpoint := urls.Join(*apiGateway.ApiEndpoint, endpoint)
+	debug.Pp(fullEndpoint)
 	_, err := c.APIGatewayV2().CreateRoute(&apigatewayv2.CreateRouteInput{
 		ApiId:    apiGatewayID,
 		RouteKey: aws.String("ANY " + endpoint),
@@ -339,6 +340,10 @@ func (c *Client) CreateRoute(apiGateway *apigatewayv2.Api, integrationID string,
 			Timeout: time.Second,
 		}
 		resp, err := client.Get(fullEndpoint)
+		debug.Pp(resp.StatusCode)
+		if err != nil {
+			debug.Pp(err.Error())
+		}
 		if err == nil && resp.StatusCode != 404 {
 			fmt.Println("we got the right response at", i, "retries")
 			return nil
