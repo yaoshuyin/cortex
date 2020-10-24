@@ -348,7 +348,7 @@ func (c *Client) CreateRoute(apiGateway *apigatewayv2.Api, integrationID string,
 		if err == nil && resp.StatusCode != 404 {
 			numSuccesses++
 			if numSuccesses >= 10 {
-				fmt.Println(i+1, ": done")
+				fmt.Println(i+1, ": good", numSuccesses, "(done)")
 				return nil
 			} else {
 				fmt.Println(i+1, ": good", numSuccesses)
