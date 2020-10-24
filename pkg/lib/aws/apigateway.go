@@ -331,22 +331,35 @@ func (c *Client) CreateRoute(apiGateway *apigatewayv2.Api, integrationID string,
 		return errors.Wrap(err, fmt.Sprintf("failed to create %s route for api gateway %s with integration %s", endpoint, *apiGatewayID, integrationID))
 	}
 
-	retries := 40
-	fmt.Println("gonna try with", fullEndpoint, "endpoint")
+	retries := 500
+	numSuccesses := 0
+	fmt.Println("new request", fullEndpoint)
 	for i := 0; i < retries; i++ {
 		time.Sleep(250 * time.Millisecond)
-		fmt.Println(i+1, "trying on endpoint", fullEndpoint)
+		// fmt.Println(i+1, "trying")
 		client := http.Client{
 			Timeout: time.Second,
 		}
 		resp, err := client.Get(fullEndpoint)
-		debug.Pp(resp.StatusCode)
-		if err != nil {
-			debug.Pp(err.Error())
-		}
+		// debug.Pp(resp.StatusCode)
+		// if err != nil {
+		// 	debug.Pp(err.Error())
+		// }
 		if err == nil && resp.StatusCode != 404 {
-			fmt.Println("we got the right response at", i, "retries")
-			return nil
+			numSuccesses++
+			if numSuccesses >= 10 {
+				fmt.Println(i+1, ": done")
+				return nil
+			} else {
+				fmt.Println(i+1, ": good", numSuccesses)
+			}
+		} else {
+			if numSuccesses > 0 {
+				fmt.Println(i+1, ": fail (reset success counter)")
+			} else {
+				fmt.Println(i+1, ": fail")
+			}
+			numSuccesses = 0
 		}
 	}
 

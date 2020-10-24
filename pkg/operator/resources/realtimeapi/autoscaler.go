@@ -17,14 +17,12 @@ limitations under the License.
 package realtimeapi
 
 import (
-	"log"
 	"math"
 	"time"
 
 	"github.com/aws/aws-sdk-go/aws"
 	"github.com/aws/aws-sdk-go/service/cloudwatch"
 	libmath "github.com/cortexlabs/cortex/pkg/lib/math"
-	s "github.com/cortexlabs/cortex/pkg/lib/strings"
 	libtime "github.com/cortexlabs/cortex/pkg/lib/time"
 	"github.com/cortexlabs/cortex/pkg/operator/config"
 	"github.com/cortexlabs/cortex/pkg/types/spec"
@@ -93,7 +91,7 @@ func autoscaleFn(initialDeployment *kapps.Deployment) (func() error, error) {
 	apiName := initialDeployment.Labels["apiName"]
 	currentReplicas := *initialDeployment.Spec.Replicas
 
-	log.Printf("%s autoscaler init", apiName)
+	// log.Printf("%s autoscaler init", apiName)
 
 	var startTime time.Time
 	recs := make(recommendations)
@@ -108,7 +106,7 @@ func autoscaleFn(initialDeployment *kapps.Deployment) (func() error, error) {
 			return err
 		}
 		if avgInFlight == nil {
-			log.Printf("%s autoscaler tick: metrics not available yet", apiName)
+			// log.Printf("%s autoscaler tick: metrics not available yet", apiName)
 			return nil
 		}
 
@@ -174,10 +172,10 @@ func autoscaleFn(initialDeployment *kapps.Deployment) (func() error, error) {
 			request = *upscaleStabilizationCeil
 		}
 
-		log.Printf("%s autoscaler tick: avg_in_flight=%s, target_replica_concurrency=%s, raw_recommendation=%s, current_replicas=%d, downscale_tolerance=%s, upscale_tolerance=%s, max_downscale_factor=%s, downscale_factor_floor=%d, max_upscale_factor=%s, upscale_factor_ceil=%d, min_replicas=%d, max_replicas=%d, recommendation=%d, downscale_stabilization_period=%s, downscale_stabilization_floor=%s, upscale_stabilization_period=%s, upscale_stabilization_ceil=%s, request=%d", apiName, s.Round(*avgInFlight, 2, 0), s.Float64(*autoscalingSpec.TargetReplicaConcurrency), s.Round(rawRecommendation, 2, 0), currentReplicas, s.Float64(autoscalingSpec.DownscaleTolerance), s.Float64(autoscalingSpec.UpscaleTolerance), s.Float64(autoscalingSpec.MaxDownscaleFactor), downscaleFactorFloor, s.Float64(autoscalingSpec.MaxUpscaleFactor), upscaleFactorCeil, autoscalingSpec.MinReplicas, autoscalingSpec.MaxReplicas, recommendation, autoscalingSpec.DownscaleStabilizationPeriod, s.ObjFlatNoQuotes(downscaleStabilizationFloor), autoscalingSpec.UpscaleStabilizationPeriod, s.ObjFlatNoQuotes(upscaleStabilizationCeil), request)
+		// log.Printf("%s autoscaler tick: avg_in_flight=%s, target_replica_concurrency=%s, raw_recommendation=%s, current_replicas=%d, downscale_tolerance=%s, upscale_tolerance=%s, max_downscale_factor=%s, downscale_factor_floor=%d, max_upscale_factor=%s, upscale_factor_ceil=%d, min_replicas=%d, max_replicas=%d, recommendation=%d, downscale_stabilization_period=%s, downscale_stabilization_floor=%s, upscale_stabilization_period=%s, upscale_stabilization_ceil=%s, request=%d", apiName, s.Round(*avgInFlight, 2, 0), s.Float64(*autoscalingSpec.TargetReplicaConcurrency), s.Round(rawRecommendation, 2, 0), currentReplicas, s.Float64(autoscalingSpec.DownscaleTolerance), s.Float64(autoscalingSpec.UpscaleTolerance), s.Float64(autoscalingSpec.MaxDownscaleFactor), downscaleFactorFloor, s.Float64(autoscalingSpec.MaxUpscaleFactor), upscaleFactorCeil, autoscalingSpec.MinReplicas, autoscalingSpec.MaxReplicas, recommendation, autoscalingSpec.DownscaleStabilizationPeriod, s.ObjFlatNoQuotes(downscaleStabilizationFloor), autoscalingSpec.UpscaleStabilizationPeriod, s.ObjFlatNoQuotes(upscaleStabilizationCeil), request)
 
 		if currentReplicas != request {
-			log.Printf("%s autoscaling event: %d -> %d", apiName, currentReplicas, request)
+			// log.Printf("%s autoscaling event: %d -> %d", apiName, currentReplicas, request)
 
 			deployment, err := config.K8s.GetDeployment(initialDeployment.Name)
 			if err != nil {
