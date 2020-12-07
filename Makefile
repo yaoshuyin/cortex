@@ -46,6 +46,12 @@ operator-local:
 	@$(MAKE) operator-stop || true
 	@./dev/operator_local.sh --operator-only || true
 
+# start local operator and attach the delve debugger to it (in server mode)
+.PHONY: operator-local-dbg
+operator-local-dbg:
+	@$(MAKE) operator-stop || true
+	@./dev/operator_local_debugger.sh || true
+
 # configure kubectl to point to the cluster specified in dev/config/cluster.yaml
 .PHONY: kubectl
 kubectl:
