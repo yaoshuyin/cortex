@@ -850,7 +850,12 @@ func validatePythonPredictor(predictor *userconfig.Predictor, models *[]CuratedM
 		return ErrorFieldNotSupportedByPredictorType(userconfig.SignatureKeyKey, predictor.Type)
 	}
 	if predictor.ServerSideBatching != nil {
-		return ErrorFieldNotSupportedByPredictorType(userconfig.ServerSideBatchingKey, predictor.Type)
+		if predictor.ServerSideBatching.MaxBatchSize != predictor.ThreadsPerProcess {
+			return ErrorConcurrencyLevelBatchSizeMismatch(
+				predictor.ServerSideBatching.MaxBatchSize,
+				predictor.ThreadsPerProcess,
+			)
+		}
 	}
 	if predictor.TensorFlowServingImage != "" {
 		return ErrorFieldNotSupportedByPredictorType(userconfig.TensorFlowServingImageKey, predictor.Type)
